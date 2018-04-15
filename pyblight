@@ -128,7 +128,7 @@ def _show_usage(errormessage=''):
         print(errormessage)
         print('')
 
-    print('backlight.py [device] [action] [value]')
+    print('pyblight [device] [action] [value]')
     print('[device]')
     print('display')
     print('keyboard')
