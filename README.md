@@ -2,18 +2,6 @@
 
 Works with percentages so the value should be either a fixed percentage or a change.
 
-### Example
-
-* pyblight display set 40%
-* pyblight display set +10%
-* pyblight display get
-
-or
-
-* pyblight keyboard set 30%
-* pyblight keyboard set -10%
-* pyblight keyboard get 
-
 
 ### Syntax
 
@@ -31,3 +19,17 @@ set           - set new value
 -X            - decrease backlightning  
  X            - set fixed value. 0-100  
   
+
+### Example
+
+* pyblight display set 40%
+* pyblight display set +10%
+* pyblight display get
+
+or
+
+* pyblight keyboard set 30%
+* pyblight keyboard set -10%
+* pyblight keyboard get 
+
+
