@@ -17,16 +17,17 @@ or
 
 ### Syntax
 
-pyblight [device] [action] [value]
-[device]
-display
-keyboard
-
-[actions]
-get           - get current value
-set           - set new value
-
-[value]
-+X            - increase backlightning
--X            - decrease backlightning
- X            - set fixed value. 0-100
+pyblight [device] [action] [value]  
+[device]  
+display  
+keyboard  
+  
+[actions]  
+get           - get current value  
+set           - set new value  
+  
+[value]  
++X            - increase backlightning  
+-X            - decrease backlightning  
+ X            - set fixed value. 0-100  
+  
