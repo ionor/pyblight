@@ -2,26 +2,24 @@
 
 ## Quick script for adjusting keyboard and screen backlight. https://github.com/ionor 
 
-import dbus
 import sys
 import os
 
 BACKLIGHTPATH = "/sys/class/backlight/intel_backlight/"
+KEYBOARDPATH  = "/sys/class/leds/smc::kbd_backlight/"
 
-## DISPLAY PART
-
-def _disp_get_value(name):
+def _get_value(the_path,name):
     try:
-        with open(os.path.join(BACKLIGHTPATH, name), "r") as f:
+        with open(os.path.join(the_path, name), "r") as f:
             return f.read()
     except (OSError, IOError) as err:
         if err.errno == 13:
             print("Error: Permission error")
             sys.exit()
 
-def _disp_set_value(name, value):
+def _set_value(the_path, name, value):
     try:
-        with open(os.path.join(BACKLIGHTPATH, name), "w") as f:
+        with open(os.path.join(the_path, name), "w") as f:
             f.write(str(value))
     except (OSError, IOError) as err:
         if err.errno == 13:
@@ -29,8 +27,7 @@ def _disp_set_value(name, value):
             sys.exit()
 
 def disp_get_actual_in_perc():
-    
-    actual = int(_disp_get_value('actual_brightness'))
+    actual = int(_get_value(BACKLIGHTPATH,'actual_brightness'))
     maximum = disp_get_max()
 
     in_perc = round(100 * (actual/maximum))
@@ -38,25 +35,47 @@ def disp_get_actual_in_perc():
     return in_perc
 
 def disp_get_actual():
-    
-    actual = int(_disp_get_value('actual_brightness'))
-    maximum = disp_get_max()
+    actual = int(_get_value(BACKLIGHTPATH,'actual_brightness'))
+   # maximum = disp_get_max()
+    #in_perc = round(100 * (actual/maximum))
 
-    in_perc = round(100 * (actual/maximum))
-
-    #return in_perc
-    return int(_disp_get_value("actual_brightness"))
+    return actual
 
 def disp_get_max():
-    return int(_disp_get_value("max_brightness"))
+    return int(_get_value(BACKLIGHTPATH, "max_brightness"))
 
 def disp_set(value):
     max_value = disp_get_max()
     
     new = _calculate(value, disp_get_actual(), disp_get_max())
 
-    _disp_set_value("brightness", new)
+    _set_value(BACKLIGHTPATH, "brightness", new)
     return round(100*new/max_value)
+
+
+def kbd_get_actual_in_perc():
+    actual = int(_get_value(KEYBOARDPATH,'brightness'))
+    maximum = kbd_get_max()
+
+    in_perc = round(100 * (actual/maximum))
+    return in_perc
+
+
+def kbd_get_actual():
+    actual = int(_get_value(KEYBOARDPATH,'brightness'))
+    return actual
+
+
+def kbd_get_max():
+    return int(_get_value(KEYBOARDPATH, "max_brightness"))
+
+def kbd_set(value):
+    max_value = kbd_get_max()
+    new = _calculate(value, kbd_get_actual(), kbd_get_max())
+    _set_value(KEYBOARDPATH, "brightness", new)
+
+    return round(100*new/max_value)
+
 
 def _calculate(value, current, maximum):
     nvalue = str(value)
@@ -98,29 +117,6 @@ def _calculate(value, current, maximum):
 
     return new
 
-## KEYBOARD PART
-def kb_set_value(value):
-    bus = dbus.SystemBus()
-    kbd_backlight_proxy = bus.get_object('org.freedesktop.UPower', '/org/freedesktop/UPower/KbdBacklight')
-    kbd_backlight = dbus.Interface(kbd_backlight_proxy, 'org.freedesktop.UPower.KbdBacklight')
-
-    current = kbd_backlight.GetBrightness()
-    maximum = kbd_backlight.GetMaxBrightness()
-
-    new = _calculate(value,current,maximum)
-    
-    kbd_backlight.SetBrightness(new)
-    return new
-
-def kb_get_value():
-    bus = dbus.SystemBus()
-    kbd_backlight_proxy = bus.get_object('org.freedesktop.UPower', '/org/freedesktop/UPower/KbdBacklight')
-    kbd_backlight = dbus.Interface(kbd_backlight_proxy, 'org.freedesktop.UPower.KbdBacklight')
-
-    current = kbd_backlight.GetBrightness()
-    maximum = kbd_backlight.GetMaxBrightness()
-
-    return round(100 * current / maximum)
 
 def _show_usage(errormessage=''):
 
@@ -155,18 +151,23 @@ if __name__ ==  '__main__':
 
         elif (len(sys.argv) >= 3) & (sys.argv[1] == 'keyboard'):
             if sys.argv[2] == 'set':
-                print(kb_set_value(str(sys.argv[3])))        
+                if len(sys.argv) > 3:
+                    print(kbd_set(str(sys.argv[3])))
+                else:
+                    _show_usage('No value supplied')
 
             elif sys.argv[2] == 'get':
-                print(kb_get_value())
+                print(kbd_get_actual_in_perc())
 
             else:
                 _show_usage('Wrong action specified')
 
         elif (len(sys.argv) >= 3) & (sys.argv[1] == 'display'):
             if sys.argv[2] == 'set':
-                print(disp_set(str(sys.argv[3])))
-
+                if len(sys.argv) > 3:
+                    print(disp_set(str(sys.argv[3])))
+                else:
+                    _show_usage('No value supplied')
             elif sys.argv[2] == 'get':
                 print(disp_get_actual_in_perc())
             else:
