@@ -2,7 +2,14 @@
 
 A program that simplifies setting keyboard and screen brightness. Can be useful if you run a window manager that doesn't set these things for you and you want to bind hotkeys.
 
+Uses the kernels /sys files to extract and to change values.
+
 Works with percentages so the value should be either a fixed percentage or a change.
+
+## INSTALLATION
+Requires python 3 and for unprivileged users you need to make sure that the relevant files in sys are writeable. 
+
+Two preconfigured udev rules files are included as an example but may need to be modified. Most likely just makeing sure that the correct group and path is set.
 
 ## USAGE
 
