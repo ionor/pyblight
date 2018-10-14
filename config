@@ -1,0 +1,5 @@
+[Main]
+display_backlight = "/sys/class/backlight/intel_backlight/"
+keyboard_backlight = "/sys/class/leds/smc::kbd_backlight/"
+
+
