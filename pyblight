@@ -31,9 +31,50 @@
 
 import sys
 import os
+import configparser
 
-BACKLIGHTPATH = "/sys/class/backlight/intel_backlight/"
-KEYBOARDPATH  = "/sys/class/leds/smc::kbd_backlight/"
+config = configparser.ConfigParser()
+runtime = configparser.ConfigParser()
+
+#BACKLIGHTPATH = "/sys/class/backlight/intel_backlight/"
+#KEYBOARDPATH  = "/sys/class/leds/smc::kbd_backlight/"
+RUNTIMEFILE = os.environ.get('XDG_RUNTIME_DIR')+'/'+'pyblight'
+#CONFIGFILE = os.environ.get('XDG_CONFIG_HOME','/etc/xdg')+'/pyblight/'+'config'
+
+CONFIGFILE = None
+CONFIGFILES = [os.environ.get('XDG_CONFIG_HOME')+'/pyblight/config', '/etc/xdg/pyblight/config']
+
+for x in CONFIGFILES:
+    if os.path.isfile(x):
+        CONFIGFILE = x
+        break
+
+if CONFIGFILE is None:
+    _show_usage(errormessage='No configuration files found')
+
+config.read(CONFIGFILE)
+BACKLIGHTPATH = config['Main']['display_backlight'].strip('"')
+KEYBOARDPATH = config['Main']['keyboard_backlight'].strip('"')
+
+def _restore_runtime_value():
+    try:
+        runtime.read(RUNTIMEFILE)
+        dsp = runtime['Temp']['display']
+        kbd = runtime['Temp']['keyboard']
+        
+        return (dsp, kbd)
+
+    except:
+        pass
+
+def _save_runtime_value():
+    runtime['Temp'] = {}
+    runtime['Temp']['display'] = str(disp_get_actual_in_perc())
+    runtime['Temp']['keyboard'] = str(kbd_get_actual_in_perc())
+
+    with open(RUNTIMEFILE,'w') as f:
+        runtime.write(f)
+
 
 def _get_value(the_path,name):
     try:
@@ -45,6 +86,12 @@ def _get_value(the_path,name):
             sys.exit()
 
 def _set_value(the_path, name, value):
+    if (len(sys.argv) == 5): 
+        if (sys.argv[4] == '--dont-store'):
+            pass
+    else:
+        _save_runtime_value()
+
     try:
         with open(os.path.join(the_path, name), "w") as f:
             f.write(str(value))
@@ -151,20 +198,31 @@ def _show_usage(errormessage=''):
         print(errormessage)
         print('')
 
-    print('pyblight [device] [action] [value]')
+    print('pyblight [device] [action] [value] [optionals]')
+    print('')
     print('[device]')
-    print('display')
-    print('keyboard')
+    print('   display')
+    print('   keyboard')
     print('')
     print('[actions]')
-    print('get           - get current value')
-    print('set           - set new value')
+    print('   get                           - get current value')
+    print('   set                           - set new value')
     print('')
     print('[value]')
-    print('+X            - increase backlightning')
-    print('-X            - decrease backlightning')
-    print(' X            - set fixed value. 0-100')
+    print('   +X                            - increase backlightning')
+    print('   -X                            - decrease backlightning')
+    print('    X                            - set fixed value. 0-100')
     print('')
+    print('[optionals]')
+    print('    --dont-store                 - set value but dont store')
+    print('')
+    print('Other alternatives')
+    print('   usage                         - show this text')
+    print('   version                       - shows version and exits')
+    print('   restore                       - restores previous value')
+    print('   store                         - stores current value')
+    print('')
+
 
 # MAIN PART
 if __name__ ==  '__main__':
@@ -179,7 +237,7 @@ if __name__ ==  '__main__':
         elif (len(sys.argv) >= 3) & (sys.argv[1] == 'keyboard'):
             if sys.argv[2] == 'set':
                 if len(sys.argv) > 3:
-                    print(kbd_set(str(sys.argv[3])))
+                    kbd_set(str(sys.argv[3]))
                 else:
                     _show_usage('No value supplied')
 
@@ -192,7 +250,7 @@ if __name__ ==  '__main__':
         elif (len(sys.argv) >= 3) & (sys.argv[1] == 'display'):
             if sys.argv[2] == 'set':
                 if len(sys.argv) > 3:
-                    print(disp_set(str(sys.argv[3])))
+                    disp_set(str(sys.argv[3]))
                 else:
                     _show_usage('No value supplied')
             elif sys.argv[2] == 'get':
@@ -200,8 +258,13 @@ if __name__ ==  '__main__':
             else:
                 _show_usage('Wrong action specified')
 
+    elif (len(sys.argv) > 1) & (sys.argv[1] in ['restore','store']):
+        if sys.argv[1] == 'restore':
+            dsp, kbd = _restore_runtime_value()
+            disp_set(dsp)
+            kbd_set(kbd)
+
+        elif sys.argv[1] == 'store':
+            _save_runtime_value()
     else:
         _show_usage('Wrong or no device specified')
-
-
-
