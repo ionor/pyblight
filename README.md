@@ -11,6 +11,15 @@ Requires python 3 and for unprivileged users you need to make sure that the rele
 
 Two preconfigured udev rules files are included as an example but may need to be modified. Most likely just makeing sure that the correct group and path is set.
 
+## CONFIGURATION
+pyblight looks for a config-file in $HOME/.config/pyblight or in /etc/xdg/pyblight (in that order). 
+
+Currently there are two configurables as shown in the default config file below. 
+  
+[Main]  
+display_backlight = "/sys/class/backlight/intel_backlight/"  
+keyboard_backlight = "/sys/class/leds/smc::kbd_backlight/"  
+  
 ## USAGE
 
 ### Syntax
