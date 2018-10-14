@@ -15,32 +15,27 @@ Two preconfigured udev rules files are included as an example but may need to be
 
 ### Syntax
 
-pyblight [device] [action] [value]  
-[device]  
-display  
-keyboard  
-  
-[actions]  
-get           - get current value  
-set           - set new value  
-  
-[value]  
-+X            - increase backlightning  
--X            - decrease backlightning  
- X            - set fixed value. 0-100  
-  
+pyblight [device] [action] [value] [optionals]
 
-### Examples
+[device]
+   display
+   keyboard
 
-* pyblight display set 40%
-* pyblight display set +10%
-* pyblight display get
+[actions]
+   get                           - get current value
+   set                           - set new value
 
-or
+[value]
+   +X                            - increase backlightning
+   -X                            - decrease backlightning
+    X                            - set fixed value. 0-100
 
-* pyblight keyboard set 30%
-* pyblight keyboard set -10%
-* pyblight keyboard get 
+[optionals]  
+    --dont-store                 - set value but dont store
 
-## TODO
-- make things less hardcoded and allow setting things in configuration files. 
+Other alternatives
+   usage                         - show this text
+   version                       - shows version and exits
+   restore                       - restores previous value
+   store                         - stores current value
+
